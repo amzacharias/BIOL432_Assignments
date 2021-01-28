@@ -1,0 +1,139 @@
+---
+title: "BIOL432_Assignment3_Markdown"
+author: "Amanda Zacharias"
+date: "1/26/2021"
+output: html_document
+---
+
+# Project Info
+
+**Date**: January 26th, 2021
+**GitHub Repository Link**: [link](https://github.com/ForgetfulCow/BIOL432_Assignment3)
+**Username**: ForgetfulCow
+
+# Load the packages
+```{r}
+library(dplyr)
+library(knitr)
+```
+
+# Load Data
+Reads in the dataset. Makes a data.frame object called 'Fallo'.
+```{r}
+Fallo <- read.csv("InputData/FallopiaData.csv")
+```
+
+# Preview the Data
+Outputs the first 6 rows of the Fallo data.frame object.
+```{r}
+head(Fallo)
+```
+
+> Note: Each time dataset is manipulated, a new dataset is created. This is to preserve the data and its changes.
+
+# Remove rows with 'Total' biomass < 60.
+Using `filter()` function to subset the Fallo dataset and only include rows where 'Total' biomass is greater or equal to 60.
+
+\n
+
+Using `head()` function to output the first 6 rows of the new Fallo1 dataset.
+```{r}
+Fallo1 <- filter(Fallo, Total >= 60)
+head(Fallo1)
+```
+
+# Reorder the columns so that they are in order: 'Total', 'Taxon', 'Scenario', 'Nutrients', and remove the other columns
+Using `transmute()` function, manipulate the inclusion and order of variables in the Fallo1 dataset. 
+
+\n
+
+Using `head()` function to output the first 6 rows of the new Fallo1 dataset.
+```{r}
+Fallo2 <- transmute(Fallo1, Total, Taxon, Scenario, Nutrients)
+head(Fallo2)
+```
+
+# Make a new column TotalG, which converts the 'Total' column from mg to grams AND replaces Total with TotalG.
+Using `mutate()` to create the new column with 'Total' values divided by 1,000, thus converting miligrams to grams. 
+
+\n
+
+Using `rename()` to change the name, 'Total', to 'TotalG'
+Using `head()` to print the first 6 rows of the new Fallo3 dataset.
+```{r}
+Fallo3 <- Fallo2 %>% 
+  mutate(Total = Total/1000) %>% 
+  rename(TotalG = Total)
+head(Fallo3)
+```
+
+# Write a custom function that will take two inputs from the user: 1. a vector of data to process (e.g. column from a data.frame object) and 2. a string that defines what calculations to perform.
+Inputs: 
+
++ "vec" = data to process, object type: vector
++ "calc" = calculation to perform, object type: string
+
+Possible calculations: 
+
++ "Average" = calculate the average value
++ "Sum" = calculate the sum of values
++ "Observations" = count the number of observed values
++ If any other string is input, output an error to the user
+
+Output: 
+
++ Calculation (numerical) or error message
+```{r}
+maths_func <- function(vec=Default, calc=Default){
+  if (calc == "Average"){
+    Average = mean(vec)
+    return(Average)
+  } # ends Average statement
+  if (calc == "Sum"){
+    Sum = sum(vec)
+    return(Sum)
+  } # ends if Sum statement
+  if (calc == "Observations"){
+    Length = length(vec)
+    return(Length)
+  } # ends if Observation statement
+  else {
+    msg <- 'Input is invalid. Please enter, "Average", "Sum", or "Observations"'
+    print(paste(msg))
+  } # ends else statement
+} # ends function
+```
+
+# Write some R code that uses your function to count the total number of observations in the 'Taxon' column.
+Calls the custom maths_func function to do calculations. Stores the function's output in the obs_Taxon variable.
+
+\n
+
+Uses `print()` to display the output to the user.
+```{r}
+obs_Taxon <- maths_func(Fallo3$Taxon, "Observations")
+print(obs_Taxon)
+```
+
+# Write some R code that uses your function to calculate the average TotalG for each of the two nutrient concentrations
+Calls the custom maths_func function to do calculations. Stores the function's output in the nutrient_grp variable.
+
+\n
+
+Uses `print()` to display the output to the user.
+
+\n
+
+The `summarize()` function will output a warning message that there is grouping. This is to be expected and there is no error.
+
+\n
+
+The `kable()` function is used to make the output of `summarize()` more attractive. 
+```{r}
+nutrient_grp <- Fallo3 %>% 
+  group_by(Nutrients) 
+ave_table <- summarize(nutrient_grp, ave_tg = maths_func(nutrient_grp$TotalG, "Average"))
+kable(ave_table, caption = "Average by Nutrient Level Table")
+```
+
+
