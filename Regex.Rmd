@@ -1,0 +1,71 @@
+---
+title: "BIOL432_Assignment4_Markdown"
+author: "Amanda Zacharias"
+date: "2/2/2021"
+output: html_document
+---
+
+# Project Info
+
+**Date**: February 2nd, 2021
+**GitHub Repository Link**: [link](https://github.com/ForgetfulCow/BIOL432_Assignments)
+**Username**: ForgetfulCow
+
+# Load the packages
+
+package loaded: dplyr
+
+```{r}
+library(dplyr)
+```
+
+# Import Data
+
+Reading in the measurements.csv dataset from the InputData folder of this project. Dataset is saved in the "MData" object. `head()` is used to view the first 6 rows of the dataset.
+
+```{r}
+MData <- read.csv("InputData/measurements.csv")
+head(MData)
+```
+
+# Add a new column called Sp that shortens the genus name in the Organism column to only the first letter and period. 
+
+## Example: *Homo sapiens* becomes *H. sapiens* in the Sp column.
+
+## Use dplyr and regular expression commands
+
+`mutate()` is used to add the new column, Sp, to the dataset. For the purposes of preserving data, a new dataset is created with the extra column. 
+
+`sub()` is used to substite the first word of an organism's species name with its first leter and a period symbol. Example: John Smith --> J. Smith.
+
+```{r}
+MData2 <- MData %>% 
+  mutate(Sp = sub("(\\w)\\w+","\\1.",Organism))
+
+head(MData2)
+```
+
+# Create a new dataset but with Sp column instead of the Organism column, moved to the beginning in place of the original Organism column. 
+
+`transmute()` is used to reorder the MData2 dataset and replace the Organism column with the Sp column. The Organism column is removed.
+
+\n
+
+Alterations to MData2 are saved in the MData3 object.
+
+```{r}
+MData3 <- MData2 %>% 
+  transmute(Sp, Limb.width, Limb.length, Observer)
+
+head(MData3)
+```
+
+# Save the dataset as a new file called MeasShort.csv
+
+Template for saving output/data is taken from [Colautti's R Crash Course](https://colauttilab.github.io/RCrashCourse/1_fundamentals.html#6_save_output)
+
+`write.csv()` will write the MData3 data.frame object to a .csv file called "MeasShort.csv". File is saved in the Output file of this project.
+
+```{r}
+write.csv(MData3, "Output/MeasShort.csv")
+```
